@@ -149,7 +149,7 @@ def main():
                         default=128, help='batch size for training: default 64')
     parser.add_argument('--num-calib-batch', default=6, type=int,
                         help='Number of batches for calibration')
-    parser.add_argument('--calib-img-dir', default='../coco/images/train2017', type=str,
+    parser.add_argument('--calib-img-dir', default='../datasets/coco/images/calib_img', type=str,
                         help='Number of batches for calibration')
     parser.add_argument('--calib-cache', default='./yolov6s_calibration.cache', type=str,
                         help='Path of calibration cache')

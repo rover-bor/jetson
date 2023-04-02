@@ -26,6 +26,7 @@ import math
 import logging
 import argparse
 
+import torch
 import tensorrt as trt
 #sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 
@@ -114,7 +115,7 @@ def create_optimization_profiles(builder, inputs, batch_sizes=[1,8,16,32,64]):
 def main():
     parser = argparse.ArgumentParser(description="Creates a TensorRT engine from the provided ONNX file.\n")
     parser.add_argument("--onnx", required=True, help="The ONNX model file to convert to TensorRT")
-    parser.add_argument("-o", "--output", type=str, default="model.engine", help="The path at which to write the engine")
+    parser.add_argument("-o", "--output", type=str, default="weights/yolov6n.engine", help="The path at which to write the engine")
     parser.add_argument("-b", "--max-batch-size", type=int, help="The max batch size for the TensorRT engine input")
     parser.add_argument("-v", "--verbosity", action="count", help="Verbosity for logging. (None) for ERROR, (-v) for INFO/WARNING/ERROR, (-vv) for VERBOSE.")
     parser.add_argument("--explicit-batch", action='store_true', help="Set trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH.")
@@ -126,8 +127,8 @@ def main():
     parser.add_argument("--fp16", action="store_true", help="Attempt to use FP16 kernels when possible.")
     parser.add_argument("--int8", action="store_true", help="Attempt to use INT8 kernels when possible. This should generally be used in addition to the --fp16 flag. \
                                                              ONLY SUPPORTS RESNET-LIKE MODELS SUCH AS RESNET50/VGG16/INCEPTION/etc.")
-    parser.add_argument("--calibration-cache", help="(INT8 ONLY) The path to read/write from calibration cache.", default="calibration.cache")
-    parser.add_argument("--calibration-data", help="(INT8 ONLY) The directory containing {*.jpg, *.jpeg, *.png} files to use for calibration. (ex: Imagenet Validation Set)", default=None)
+    parser.add_argument("--calibration-cache", default="../datasets/coco/images/calibration.cache", help="(INT8 ONLY) The path to read/write from calibration cache.")
+    parser.add_argument("--calibration-data", default="../datasets/coco/images/calib_img", help="(INT8 ONLY) The directory containing {*.jpg, *.jpeg, *.png} files to use for calibration. (ex: Imagenet Validation Set)")
     parser.add_argument("--calibration-batch-size", help="(INT8 ONLY) The batch size to use during calibration.", type=int, default=128)
     parser.add_argument("--max-calibration-size", help="(INT8 ONLY) The max number of data to calibrate on from --calibration-data.", type=int, default=2048)
     parser.add_argument("-s", "--simple", action="store_true", help="Use SimpleCalibrator with random data instead of ImagenetCalibrator for INT8 calibration.")
@@ -213,6 +214,7 @@ def main():
                                                              args.calibration_batch_size)
 
         logger.info("Building Engine...")
+        print(args.output)
         with builder.build_engine(network, config) as engine, open(args.output, "wb") as f:
             logger.info("Serializing engine to file: {:}".format(args.output))
             f.write(engine.serialize())
@@ -220,3 +222,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# python tools/quantization/tensorrt/post_training/onnx_to_tensorrt.py --fp16 --int8 -v --explicit-batch --onnx weights/yolov6n.onnx
