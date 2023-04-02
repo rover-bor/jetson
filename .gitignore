@@ -112,6 +112,6 @@ venv.bak/
 *.sh
 
 # model files
-*.onnx
-*.pt
-*.engine
+# *.onnx
+# *.pt
+# *.engine
