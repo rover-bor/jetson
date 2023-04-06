@@ -33,7 +33,8 @@ class Conv(nn.Module):
             bias=bias,
         )
         self.bn = nn.BatchNorm2d(out_channels)
-        self.act = nn.SiLU()
+        self.act = SiLU()
+        # self.act = nn.ReLU()
 
     def forward(self, x):
         return self.act(self.bn(self.conv(x)))
